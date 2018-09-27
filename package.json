@@ -18,5 +18,9 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^2.0.0"
+  },
+  "dependencies": {
+    "dropbox": "^4.0.9",
+    "isomorphic-fetch": "^2.2.1"
   }
 }
