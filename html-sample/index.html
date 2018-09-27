@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Dropbox Uploader!</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    
+    
+    <!-- normal script imports etc  -->
+    <script src="jquery.min.js"></script>    
+    
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module) module = window.module;</script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js" integrity="sha384-pjaaA8dDz/5BgdFUPX6M/9SUZv4d12SUPF0axWc+VRZkx5xU3daN+lYb49+Ax+Tl" crossorigin="anonymous"></script>
+    <style>
+    body {
+      -webkit-font-smoothing: antialiased;
+    }
+    p {
+    text-align: center;
+  }
+  .Grid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .Grid-item {
+    width: 100%;
+    background: transparent;
+    margin-top: 2%;
+  }
+  @media (min-width: 48rem) {
+    .Grid-item {
+      width: 49%;
+    }
+    .Grid-item:nth-child(odd) {
+      
+      margin-right: 2%;
+    }
+  }
+  @media (min-width: 62rem) {
+    .Grid-item {
+      width: 13.5%;
+    }
+    .Grid-item:not(:nth-child(6n)) {      
+      margin-right: 2%;
+    }
+  }
+  .Grid-item:before {
+    content: "";
+    float: left;
+    padding-top: 100%;
+  }
+
+  .Grid-action { 
+    z-index: 1; 
+    border: 3px solid darkgreen;
+  }
+  .Grid-background {
+    background-image:url(https://via.placeholder.com/90x90);
+    background-position: center center;
+    background-size: cover;
+    width:100%;
+    height:100%;
+  }
+  .cover {
+    border:3px inset orange;
+  }
+.mustsee {
+  border: 3px solid lightgreen
+}
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class=row>
+        <div class='col-md-12'>
+            <h1>Dropbox Uploader</h1>
+            <h5>Please drag and drop folder you want to upload.</h5>
+				<input type="file" id="files" name="files[]" multiple />
+              
+              <button id="party_roll" class="very-sweet-looking">Load</button>
+              <button id="start_run" class="very-sweet-looking">Start</button>
+              <hr/>              
+              <strong>List of Files</strong>
+              <div style='height:100%;overflow-y: auto'>
+                <ul id="party_items"  class="list-group" style="display: none">
+                
+                </ul>
+              </div>
+        </div>
+      </div>
+      <div class=row>
+        <div class="col-md-12">
+          <p>&larr; Resize window to see it in action &rarr;</p>
+          <div class="Grid">
+           
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+
+    <script>
+
+    function rotate(el) { 
+      var gb =  $(el).parent().parent().find(".Grid-background");   
+      var next = (parseInt(gb.data("rotation"))+90)%360;   
+      gb.css("transform","rotate("+next+"deg)"); 
+      gb.data("rotation",next);    
+    }
+
+    function cover(el) { 
+      var gb = $(el).parent().parent().find(".Grid-background"); 
+      $('.Grid-background').data("cover",false);  
+      $('.Grid-background').removeClass("cover");  
+      gb.data("cover",true).addClass("cover"); 
+      
+    }
+
+    function mustsee(el) { 
+      var gb = $(el).parent().parent().find(".Grid-background");             
+      if(gb.data("mustsee")== true) {
+        gb.data("mustsee",false);
+        $(el).parent().removeClass("mustsee");
+      }
+      else {
+        gb.data("mustsee",true);
+        $(el).parent().addClass("mustsee");
+      }
+      
+    }
+
+      if (window.File && window.FileReader && window.FileList && window.Blob) {
+		  // Great success! All the File APIs are supported.
+		} else {
+		  alert('The File APIs are not fully supported in this browser.');
+		}
+		
+	 function handleFileSelect(evt) {
+	 
+		window.files = evt.target.files; // FileList object
+		console.log(files);
+		
+		
+	}
+	document.getElementById('files').addEventListener('change', handleFileSelect, false);
+	
+	$(function() {
+		$('#party_roll').click(function() {		
+			console.log("rendering...");
+		   
+			let ul = $(window.document.getElementById("party_items"));
+			ul.find("li").remove();
+
+			var $el = $('.Grid');
+
+			for (var i=0;i<window.files.length; i++) {
+				let li = $('<li />');
+				li.html("<a href='#'>"+window.files[i].name+"</a><span class='badge badge-primary badge-pill'>idle</span>");
+				li.addClass('list-group-item d-flex justify-content-between align-items-center');
+				if(window.files[i].name.endsWith('.png')||window.files[i].name.endsWith('.jpg')) {
+				  li.appendTo(ul);
+				  $('<div class="Grid-item">'+
+					'<div class="Grid-action" style="position:absolute">'+
+					  '<button onclick="rotate(this)" title="rotate">R</button>'+
+					  '<button onclick="mustsee(this)" title="must see" >M</button>'+
+					  '<button onclick="cover(this)" title="cover">C</button>'+
+					'</div>'+
+					'<div class="Grid-background" data-cover="false" data-mustsee="false" data-rotation="0" data-index="'+i+'" data-src="'+window.files[i].name+'" ></div>'+
+				  '</div>')
+					.appendTo($el);
+				}
+			}
+			window.ShowViewPort();			
+			return false;
+		});
+	});
+
+	 function ShowViewPort() {
+		var scroll = $(window).scrollTop();
+		var window_height = window.innerHeight;
+		var grid_height = $('.Grid').height();
+		var grid_width = $('.Grid').width();
+		var grid_offset = $('.Grid').offset().top;
+		  var one_height =  parseInt($('.Grid-item').first().css('margin-top'), 10) + $('.Grid-item').first().outerHeight();
+		var one_width =  parseInt($('.Grid-item').first().css('margin-right'), 10) + $('.Grid-item').first().outerWidth();
+		var total = $('.Grid-item').length;	
+		var sized = Math.round((parseInt($('.Grid-item').first().css('margin-right'), 10) + grid_width) / one_width);	
+		var from_top = scroll - grid_offset;
+		var show_row = Math.ceil(window_height / one_height);
+		var from_row = Math.floor(from_top / one_height );
+		if(from_row<0)from_row =0;
+		var start = from_row * sized;
+	  
+		if( ((scroll - grid_offset) % one_height) > 50 ) {
+			show_row++;
+		}
+		var stop = start + ( sized * show_row );	
+		console.log("starting from",start,"to",stop);
+		for(var i=start;i<=stop;i++) {
+		  var pin = $($('.Grid-item')[i]).find(".Grid-background").first();
+		  if(pin) {
+			if(pin.data("statu")!==true) {
+			
+			var f = window.files[i];
+			 console.log("loading",i);
+			 var reader = new FileReader();
+			 reader.onload = (function(theFile, pin2) {
+			 console.log(pin2);
+				return function(e) {
+				if(pin2.data("statu")!==true) {
+					  pin2.css("background-image", 'url('+ e.target.result+')' );
+					  pin2.data("statu",true);
+					  console.log("DataUrlLoaded!", pin2, pin2.data("statu"));
+				  }
+				};
+			  })(f,pin);			  
+			  reader.readAsDataURL(f);			  			 
+			  
+			}
+		  }
+		}
+	  }
+
+	  window.ShowViewPort = ShowViewPort;
+
+	  $(window).resize(function (event) {
+		ShowViewPort();
+	  });
+	  $(window).scroll(function (event) {
+		ShowViewPort();
+	  });
+	
+    </script>
+	<script src="renderer.js" />
+</body>
+</html>
